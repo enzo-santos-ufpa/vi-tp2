@@ -7,7 +7,7 @@
         <link rel="stylesheet" type="text/css" href="css/index.css">
     </head>
     <body>
-        <p id="msg" class="msg">Loading, please wait...</p>
+        <p id="msg" class="msg">Carregando...</p>
         <p id="q1-1" class="question">Os clientes parecem felizes com as compras?</p>
         <svg id="g1" width="600" height="500"/>
         <p class="explanation">Sim. A maioria dos clientes representados no dataset (57%) avaliaram a sua compra com a
@@ -17,10 +17,16 @@
         <p id="q1-2" class="question">Existe um perfil de clientes satisfeitos e insatisfeitos?</p>
         <svg id="g2" width="600" height="500"/>
         <p class="explanation">Sim. O gráfico acima mostra a diferença entre o tempo estimado de entrega e o tempo de
-        entrega em dias. Portanto, uma diferença negativa (à esquerda do valor 0) significa que o produto chegou antes
+            entrega em dias. Portanto, uma diferença negativa (à esquerda do valor 0) significa que o produto chegou antes
             do esperado e uma diferença positiva representa que o produto atrasou. No intervalo positivo, existe um pico
-        de avaliação 1 próximo à origem, induzindo (corretamente) que os clientes ficam insatisfeitos quando o produto atrasa.</p>
-        <script type="text/javascript" src="js/index_q1-1.js"></script>
-        <script type="module" src="js/index_q1-2.js"></script>
+            de avaliação 1 próximo à origem, induzindo (corretamente) que os clientes ficam insatisfeitos quando o produto
+            atrasa. Também é possível afirmar que o produto, de acordo com a base de dados, nunca irá atrasar mais de um
+            mês.</p>
+        <p id="q2" class="question">Como a venda de produtos populares se comporta durante o tempo? Existe alguma sazonalidade?</p>
+        <svg id="g3" width="600" height="500"/>
+        <p class="explanation">Sim. É possível observar uma tendência de crescimento em relação aos produtos eletrônicos,
+        atingindo um pico no final de 2017, provavalmente em decorrência do Natal. Em 2016, observa-se um pico de vendas
+            dos produtos de cama, mesa e banho no seu final.</p>
+        <script type="module" src="js/main.js"></script>
     </body>
 </html>

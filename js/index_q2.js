@@ -1,36 +1,54 @@
 import { join } from './utils.js';
 
-function plot(reviews, orders) {
+function plot(items, orders, products) {
+    const d0 = join(orders, items, "order_id", "order_id", function(item, order) {
+        return {
+            time: new Date(Date.parse(order["order_purchase_timestamp"])),
+            product_id: item["product_id"],
+        };
+    });
+
+    const d1 = join(products, d0, "product_id", "product_id", function(d, product) {
+        const rawType = product["product_category_name"];
+        let type;
+        if (rawType.startsWith("construcao")) type = "construcao";
+        else if (rawType.startsWith("fashion")) type = "fashion";
+        else if (rawType.startsWith("moveis")) type = "moveis";
+        else if (rawType.startsWith("livros")) type = "livros";
+        else if (rawType.startsWith("consoles")) type = "informatica";
+        else if (rawType.startsWith("dvds")) type = "informatica";
+        else if (rawType.startsWith("eletro")) type = "informatica";
+        else if (rawType.startsWith("informatica")) type = "informatica";
+        else if (rawType.startsWith("pc")) type = "informatica";
+        else if (rawType.startsWith("portateis")) type = "informatica";
+        else if (rawType.startsWith("tablets")) type = "informatica";
+        else type = rawType;
+
+        return {time: d["time"], type: type};
+    });
+
     const groups = d3.nest()
-        .key(d => d.review_score)
-        .entries(join(orders, reviews, "order_id", "order_id", function(review, order) {
-            const delivered = Date.parse(order["order_delivered_customer_date"]);
-            const estimated = Date.parse(order["order_estimated_delivery_date"]);
-            return {
-                review_score: review.review_score,
-                days_delayed: Math.floor((delivered - estimated) / 86_400_000),
-            };
-        }))
+        .key(d => d.type)
+        .entries(d1)
         .map(function (group) {
             const counts = {};
-            group.values.map(data => data["days_delayed"])
-                .filter(days => !isNaN(days))
+            group.values.map(data => data["time"].toDateString())
                 .forEach(num => counts[num] = counts[num] ? counts[num] + 1 : 1);
-            return {review_score: group.key, scores: counts};
+            return {type: group.key, counts: counts};
         });
 
     const dataset = groups.flatMap(group => {
-        return Object.entries(group.scores).map(entry => ({
-            review_score: group.review_score,
-            x: parseInt(entry[0]),
+        return Object.entries(group.counts).map(entry => ({
+            type: group.type,
+            x: new Date(entry[0]),
             y: entry[1],
         }));
     });
 
-    const sumstat = d3.nest().key(d => d.review_score).entries(dataset);
-    Object.values(sumstat).forEach(entry => entry.values.sort((a, b) => a.x - b.x));
+    const sumstat = d3.nest().key(d => d.type).entries(dataset);
+    Object.values(sumstat).forEach(entry => entry.values.sort((a, b) => b.x.getTime() - a.x.getTime()));
 
-    const svg = d3.select("#g2");
+    const svg = d3.select("#g3");
     const margin = 60;
     const width = svg.attr("width") - 2 * margin;
     const height = svg.attr("height") - 2 * margin;
@@ -47,10 +65,10 @@ function plot(reviews, orders) {
 
         g.append("g")
             .attr("transform", "translate(0," + height + ")")
-            .call(d3.axisBottom(xScale));
+            .call(d3.axisBottom(xScale).tickFormat((d, i) => new Date(d).getFullYear()).ticks(3));
 
         g.append("g")
-            .call(d3.axisLeft(yScale).tickFormat(d => d + "").ticks(11))
+            .call(d3.axisLeft(yScale).tickFormat(d => d + "").ticks(5))
             .append("text")
             .attr("y", 6)
             .attr("dy", "0.71em")
@@ -62,13 +80,13 @@ function plot(reviews, orders) {
             .attr('y', margin / 2.4)
             .attr('transform', 'rotate(-90)')
             .attr('text-anchor', 'middle')
-            .text('Ocorrências');
+            .text('Número de compras');
 
         svg.append('text')
             .attr('x', width / 2 + margin)
             .attr('y', 40)
             .attr('text-anchor', 'middle')
-            .text('Diferença entre o tempo estimado e o tempo de entrega (dias)');
+            .text('Tempo');
 
         return g;
     }
@@ -85,7 +103,7 @@ function plot(reviews, orders) {
             .attr("stroke", d => color(d.key))
             .attr("stroke-width", 2)
             .attr("d", d => d3.line()
-                .x(d => xScale(d.x))
+                .x(d => xScale(d.x.getTime()))
                 .y(d => yScale(d.y))
                 (d.values));
 
@@ -103,7 +121,7 @@ function plot(reviews, orders) {
                 .attr('fill', 'black')
                 .attr('background-color', 'gray')
                 .attr('text-anchor', 'middle')
-                .text("Avaliação: " + actual.key);
+                .text("Categoria: " + actual.key);
         })
             .on("mouseleave", function (actual, i) {
                 d3.select(this)
@@ -117,11 +135,11 @@ function plot(reviews, orders) {
 
     const g = buildGraph(svg);
     buildData(g, dataset, sumstat);
-
 }
 
 export async function run() {
-    const dataReviews = await d3.csv("files/olist_order_reviews_dataset.csv");
+    const dataItems = await d3.csv("files/olist_order_items_dataset.csv");
     const dataOrders = await d3.csv("files/olist_orders_dataset.csv");
-    plot(dataReviews, dataOrders);
+    const dataProducts = await d3.csv("files/olist_products_dataset.csv");
+    plot(dataItems, dataOrders, dataProducts);
 }

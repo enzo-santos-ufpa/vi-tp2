@@ -1,4 +1,4 @@
-function buildStatusGraph(dataset) {
+function plot(dataset) {
     const svg = d3.select("#g1");
     const margin = 60;
     const width = svg.attr("width") - 2 * margin;
@@ -101,10 +101,7 @@ function buildStatusGraph(dataset) {
     buildData(g, items);
 }
 
-async function run() {
+export async function run() {
     const data = await d3.csv("files/olist_order_reviews_dataset.csv");
-    document.getElementById("msg").innerHTML = "Loaded"
-    buildStatusGraph(data);
+    plot(data);
 }
-
-run();
