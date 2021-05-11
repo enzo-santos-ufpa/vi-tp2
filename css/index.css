@@ -1,6 +1,30 @@
+.question {
+    font-weight: bold;
+    size: 24px;
+}
+
+.explanation {
+    size: 16px
+}
+
 .bar { fill: steelblue }
+
+.path{
+    stroke:black;
+    stroke-width:2px ;
+}
+
+.line{
+    stroke: black;
+    stroke-width: 2px;
+}
 
 text.absolute {
     font-size: 14px;
     fill: #FDFDFD;
+}
+
+text.legend {
+    font-size: 14px;
+    fill: #1F1F1F;
 }
